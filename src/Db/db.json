@@ -1,0 +1,34 @@
+{
+  "todos": [
+    {
+      "id": "800c",
+      "title": "Buy bread3",
+      "completed": false
+    },
+    {
+      "id": "e516",
+      "title": "clean the room",
+      "completed": false
+    },
+    {
+      "id": "9005",
+      "title": "Cross the street",
+      "completed": false
+    },
+    {
+      "id": "4d62",
+      "title": "Buy milk",
+      "completed": false
+    },
+    {
+      "id": "1cb1",
+      "title": "be ready for training",
+      "completed": false
+    },
+    {
+      "id": "a933",
+      "title": "complete 2 task",
+      "completed": false
+    }
+  ]
+}

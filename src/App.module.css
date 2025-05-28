@@ -19,3 +19,9 @@
   }
 }
 
+button{
+  cursor: pointer;
+  background-color: black;
+  color: white;
+  transition: all .3s ease;
+}
