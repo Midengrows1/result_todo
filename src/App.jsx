@@ -2,44 +2,42 @@ import { useEffect, useState } from 'react';
 import s from './App.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faTrashCan, faPlus } from '@fortawesome/free-solid-svg-icons';
+import {
+  ref,
+  onValue,
+  push,
+  set,
+  remove,
+  orderByChild,
+  query,
+  startAt,
+  endAt,
+  orderByKey,
+  get,
+} from 'firebase/database';
+import { db } from './firebase';
 function App() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSorted, setIsSorted] = useState(false);
   const [currentTodo, setCurrentTodo] = useState({
-    id: todos.length + 1,
+    id: todos?.length + 1,
     title: '',
     completed: false,
   });
-  const [query, setQuery] = useState('');
+  const [queryItem, setQueryItem] = useState('');
   const [debounceQuery, setDebounceQuery] = useState('');
 
-  const makeRequest = async (method = 'GET', body = null, endpoint = 'todos') => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_PUBLIC_API_URL}/${endpoint}`, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body ? JSON.stringify(body) : null,
-      });
+  const todosDbRef = ref(db, 'todos');
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Fetch error:', error);
-      return [];
-    }
-  };
-
-  const getTodos = async () => {
+  const getTodos = () => {
     setIsLoading(true);
-    const data = await makeRequest();
-    setTodos(data);
-    setIsLoading(false);
+    return onValue(todosDbRef, snapshot => {
+      setIsLoading(true);
+      const loadedTodos = snapshot.val() || {};
+      setTodos(loadedTodos);
+      setIsLoading(false);
+    });
   };
 
   useEffect(() => {
@@ -47,44 +45,64 @@ function App() {
   }, []);
 
   const handleDeleteTodo = async id => {
-    await makeRequest('DELETE', null, `todos/${id}`);
+    const singleTodoRef = ref(db, `todos/${id}`);
+    remove(singleTodoRef);
   };
 
-  const handleCreateTodo = async event => {
+  const handleCreateTodo = () => {
     if (!currentTodo.title.trim()) return;
     const newTodo = {
       title: currentTodo.title,
       completed: false,
     };
-    await makeRequest('POST', newTodo);
+    push(todosDbRef, newTodo);
+    setCurrentTodo(prevState => ({ ...prevState, title: '' }));
   };
 
-  const handleUpdateTodo = async (id, title) => {
+  const handleUpdateTodo = (id, title) => {
     const updatedTodo = { id, title, completed: false };
-    await makeRequest('PUT', updatedTodo, `todos/${id}`);
+    const singleTodoRef = ref(db, `todos/${id}`);
+    set(singleTodoRef, updatedTodo);
   };
 
   const handleInputChange = e => {
     setCurrentTodo(prev => ({ ...prev, title: e.target.value }));
   };
 
-  const handleSearch = e => {
-    setQuery(e.target.value);
-  };
+  const handleSearch = e => {};
 
   useEffect(() => {
     const handleDebounce = setTimeout(() => {
-      setDebounceQuery(query);
+      setDebounceQuery(queryItem);
     }, 500);
     return () => {
       clearTimeout(handleDebounce);
     };
-  }, [query]);
+  }, [queryItem]);
 
-  const onSearch = async () => {
-    const data = await makeRequest('GET', null, `todos?title=${query}`);
-    setTodos(data);
+  const onSearch = () => {
+    const searchRef = query(
+      ref(db, 'todos'),
+      orderByChild('title'),
+      startAt(debounceQuery),
+      endAt(debounceQuery + '\uf8ff'),
+    );
+    return onValue(
+      searchRef,
+      snapshot => {
+        let results = {};
+        snapshot.forEach(childSnapshot => {
+          results[childSnapshot.key] = { ...childSnapshot.val() };
+        });
+        console.log('Search results:', results);
+        setTodos(results);
+      },
+      error => {
+        console.error('Search failed:', error);
+      },
+    );
   };
+
   useEffect(() => {
     if (debounceQuery) {
       onSearch();
@@ -93,11 +111,17 @@ function App() {
     }
   }, [debounceQuery]);
 
-  const sortByAlphabet = async () => {
+  const sortByAlphabet = () => {
+    const sortedQuery = query(todosDbRef, orderByChild('title'));
     setIsSorted(!isSorted);
     if (!isSorted) {
-      const data = await makeRequest('GET', null, `todos?_sort=title`);
-      setTodos(data);
+      onValue(sortedQuery, snapshot => {
+        const sortedData = {};
+        snapshot.forEach(childSnapshot => {
+          sortedData[childSnapshot.key] = childSnapshot.val();
+        });
+        setTodos(sortedData);
+      });
     } else {
       getTodos();
     }
@@ -127,8 +151,8 @@ function App() {
             type="text"
             placeholder="search"
             className="border-2 rounded-lg p-2"
-            value={query}
-            onChange={handleSearch}
+            value={queryItem}
+            onChange={e => setQueryItem(e.target.value)}
           />
           <label htmlFor="" className="flex gap-2 items-center font-bold">
             Sort by Alphabet
@@ -139,11 +163,16 @@ function App() {
         <div className="flex flex-wrap gap-4">
           {isLoading ? (
             <div className={s.loader}></div>
-          ) : todos.length > 0 ? (
-            todos.map(({ id, title }) => (
-              <div key={id} className="border-2 py-3 px-2 rounded-lg w-1/4 box-border">
+          ) : Object.entries(todos).length > 0 ? (
+            Object.entries(todos).map(([id, { title }]) => (
+              <div
+                key={id}
+                className="border-2 py-3 px-2 rounded-lg  min-w-[400px] flex-wrap w-1/4 box-border"
+              >
                 <div className="flex justify-between items-center">
-                  <span>{title}</span>
+                  <span className="overflow-ellipsis w-fit overflow-hidden whitespace-nowrap">
+                    {title}
+                  </span>
                   <div className="flex gap-3">
                     <button
                       type="button"
