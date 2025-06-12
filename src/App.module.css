@@ -18,10 +18,10 @@
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
-
+/* 
 button{
   cursor: pointer;
   background-color: black;
   color: white;
   transition: all .3s ease;
-}
+} */
