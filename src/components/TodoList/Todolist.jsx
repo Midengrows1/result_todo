@@ -1,7 +1,8 @@
+import Loader from '../Loader/Loader';
 import { TodoItem } from '../TodoItem/TodoItem';
 
 export const Todolist = ({ todos, isLoading, onUpdate, onDelete, setCurrentTodo, singleTodo }) => {
-  if (isLoading) return '...Загрузка';
+  if (isLoading) return <Loader />;
   if (!Object.entries(todos).length) return 'Список пуст';
   return (
     <div className="flex flex-wrap gap-4">

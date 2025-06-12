@@ -47,7 +47,7 @@ export const TodoItem = ({
               onChange={() => onUpdate(id, newTitle, !completed)}
             />
             <span
-              className={`overflow-ellipsis w-fit overflow-hidden whitespace-nowrap ${
+              className={`overflow-ellipsis w-fit overflow-hidden whitespace-nowrap font-bold ${
                 completed ? 'line-through' : ''
               }`}
             >

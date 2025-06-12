@@ -17,23 +17,29 @@ export const TodoForm = ({ onAdd, onSort, setCurrentTodo, singleTodo, setDebounc
       clearTimeout(handleDebounce);
     };
   }, [queryItem]);
+  const handleTodoAdd = e => {
+    e.preventDefault();
+    onAdd();
+  };
   return (
     <div className="flex gap-3 my-2 items-center content-center flex-1">
-      <Field
-        className=" flex-1 border-2 outline-1 rounded-lg w-1/4 p-2"
-        type="text"
-        name="title"
-        value={singleTodo.title}
-        placeholder="Enter todo title"
-        onChange={handleInputChange}
-      />
-      <Button
-        type="button"
-        className={ButtonClass + ` hover:!text-green-500 text-white px-3 p-2 rounded-lg`}
-        onClick={onAdd}
-      >
-        <FontAwesomeIcon icon={faPlus} />
-      </Button>
+      <form action="#" className="flex gap-3 my-2 items-center flex-1">
+        <Field
+          className="flex-1 border-2 outline-1 rounded-lg w-1/4 p-2"
+          type="text"
+          name="title"
+          value={singleTodo.title}
+          placeholder="Enter todo title"
+          onChange={handleInputChange}
+        />
+        <Button
+          type="submit"
+          className={ButtonClass + ` hover:!text-green-500 text-white px-3 p-2 rounded-lg`}
+          onClick={handleTodoAdd}
+        >
+          <FontAwesomeIcon icon={faPlus} />
+        </Button>
+      </form>
       <Field
         type="text"
         placeholder="search..."
