@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Field } from '../Field/Field';
 import { Button } from '../Button/Button';
 import { ButtonClass } from '../../App';
-export const TodoForm = ({ onAdd, onSort, setCurrentTodo, singleTodo, setDebounceQuery }) => {
+import { AppContext } from '../../context';
+export const TodoForm = () => {
+  const { onAdd, onSort, setCurrentTodo, currentTodo, setDebounceQuery } = useContext(AppContext);
   const handleInputChange = e => {
     setCurrentTodo(prev => ({ ...prev, title: e.target.value }));
   };
@@ -28,7 +30,7 @@ export const TodoForm = ({ onAdd, onSort, setCurrentTodo, singleTodo, setDebounc
           className="flex-1 border-2 outline-1 rounded-lg w-1/4 p-2"
           type="text"
           name="title"
-          value={singleTodo.title}
+          value={currentTodo.title}
           placeholder="Enter todo title"
           onChange={handleInputChange}
         />
