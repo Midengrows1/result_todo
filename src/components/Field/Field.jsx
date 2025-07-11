@@ -1,3 +1,4 @@
-export const Field = ({ type, value, onChange, ...props }) => {
-  return <input type={type} value={value ?? ''} onChange={onChange} {...props}></input>;
-};
+import { forwardRef } from 'react';
+export const Field = forwardRef((props, ref) => {
+  return <input ref={ref} {...props}></input>;
+});
